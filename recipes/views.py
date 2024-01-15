@@ -1,3 +1,5 @@
+from typing import Any
+from django.db.models.query import QuerySet
 from django.forms.models import BaseModelForm
 from django.http import HttpResponse
 from django.views.generic import (
@@ -8,6 +10,9 @@ from django.views.generic import (
     UpdateView,
 )
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib import messages
+from django.db.models import Q
+
 from .models import Recipe
 from .forms import RecipeForm
 
@@ -20,6 +25,22 @@ class Recipes(ListView):
     template_name = "recipes/recipes.html"
     model = Recipe
     context_object_name = "recipes"
+
+    def get_queryset(self, **kwargs):
+        query = self.request.GET.get("q")
+        recipes = self.model.objects.all()
+
+        if query:
+            recipes = self.model.objects.filter(
+                Q(title__icontains=query)
+                | Q(description__icontains=query)
+                | Q(instructions__icontains=query)
+                | Q(cuisine_types__icontains=query)
+            )
+        elif "q" in self.request.GET:
+            messages.error(self.request, "You didn't enter any search criteria")
+
+        return recipes
 
 
 class RecipeDetail(DetailView):

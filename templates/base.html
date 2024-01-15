@@ -19,7 +19,16 @@
 </head>
 <body>
     {% include 'includes/header.html' %}
-    
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="message-container">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <main>
         {% block content %}
         {% endblock %}
